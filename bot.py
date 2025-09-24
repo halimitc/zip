@@ -84,8 +84,11 @@ def main():
     # kirim notif average buy sekali (manual)
     average_buy_notif()
 
-    # listener transaksi blockchain
-    event_filter = jadu_contract.events.Transfer.create_filter(fromBlock="latest")
+    try:
+        event_filter = jadu_contract.events.Transfer.create_filter(from_block="latest")
+    except Exception as e:
+        print("Filter Error:", e)
+        return
 
     while True:
         try:
@@ -93,6 +96,7 @@ def main():
                 handle_event(event)
         except Exception as e:
             print("Error:", e)
+            time.sleep(5)  # jeda biar gak spam error
 
         time.sleep(2)
 
