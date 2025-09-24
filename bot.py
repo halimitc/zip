@@ -35,7 +35,7 @@ jadu_contract = w3.eth.contract(address=JADU_ADDRESS, abi=ERC20_ABI)
 # ===== TELEGRAM FUNCTION =====
 def send_telegram(msg):
     url = f"https://api.telegram.org/7856840601:AAG7MqzMAlJUQQUVN78wwkS5SNR5bl8rJJ0/sendMessage"
-    data = {"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"}
+    data = {"chat_id": -4853724640, "text": msg, "parse_mode": "HTML"}
     try:
         requests.post(url, data=data, timeout=5)
     except Exception as e:
@@ -102,4 +102,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
