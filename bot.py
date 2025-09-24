@@ -4,9 +4,9 @@ import requests
 from web3 import Web3
 
 # ===== CONFIG =====
-RPC_WS = os.getenv("RPC_WS")  # WebSocket RPC Somnia, contoh: wss://ws.infra.mainnet.somnia.network
-JADU_ADDRESS = Web3.to_checksum_address(os.getenv("JADU_ADDRESS"))  # alamat token JADU
-FACTORY_ADDRESS = Web3.to_checksum_address(os.getenv("FACTORY_ADDRESS"))  # alamat factory
+RPC_URL = os.getenv("RPC_URL")  # HTTP atau WS RPC Somnia
+JADU_ADDRESS = Web3.to_checksum_address(os.getenv("JADU_ADDRESS"))  
+FACTORY_ADDRESS = Web3.to_checksum_address(os.getenv("FACTORY_ADDRESS"))  
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -14,10 +14,11 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 DELAY = 10  # Delay notif average buy
 
 # ===== SETUP WEB3 =====
-w3 = Web3(Web3.WebsocketProvider(RPC_WS))
+w3 = Web3(Web3.HTTPProvider(RPC_URL))
 if not w3.is_connected():
-    print("❌ Gagal connect ke WebSocket RPC")
+    print("❌ Gagal connect ke RPC")
     exit()
+print("✅ Terhubung ke RPC:", RPC_URL)
 
 # ===== ERC20 Transfer ABI =====
 ERC20_ABI = [
@@ -80,3 +81,34 @@ def average_buy_notif():
             f"🛡️ Developer terus melakukan average buy demi keberlangsungan project <b>JADU</b>!"
         )
         send_telegram(msg)
+        time.sleep(DELAY)
+
+# ===== MAIN LOOP (polling get_logs) =====
+def main():
+    send_telegram("✅ <b>Bot JADU sudah online!</b>")
+    print("📡 BuyBot JADU aktif, memantau transaksi...")
+
+    # Kirim notif average buy sekali
+    average_buy_notif()
+
+    last_block = w3.eth.block_number
+    print(f"Mulai memantau dari block {last_block}")
+
+    while True:
+        try:
+            current_block = w3.eth.block_number
+            if current_block > last_block:
+                events = jadu_contract.events.Transfer().get_logs(
+                    fromBlock=last_block + 1,
+                    toBlock=current_block
+                )
+                for event in events:
+                    handle_event(event)
+                last_block = current_block
+            time.sleep(5)
+        except Exception as e:
+            print("Loop Error:", e)
+            time.sleep(5)
+
+if __name__ == "__main__":
+    main()
