@@ -56,6 +56,7 @@ def handle_event(event):
 
 
 def main():
+    send_telegram("✅ Bot JADU sudah online!")
     print("📡 BuyBot JADU aktif, mantau transaksi...")
     event_filter = jadu_contract.events.Transfer.create_filter(fromBlock="latest")
 
@@ -71,3 +72,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
